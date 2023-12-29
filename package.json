@@ -3,6 +3,19 @@
 	"author": "Mahedi Hassan Shawon",
 	"version": "1.0.0",
 	"description": "A comprehensive test suite designed for FreeCodeCamp's backend certification, validating mastery in backend development concepts, APIs, databases, and server-side scripting languages.",
+	"keywords": [
+		"backend",
+		"certification",
+		"test",
+		"FreeCodeCamp",
+		"development",
+		"APIs",
+		"databases",
+		"server-side",
+		"scripting",
+		"mastery",
+		"validation"
+	],
 	"dependencies": {
 		"express": "^4.14.0"
 	},
