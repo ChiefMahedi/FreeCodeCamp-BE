@@ -2,6 +2,7 @@
 	"name": "fcc-learn-npm-package-json",
 	"author": "Mahedi Hassan Shawon",
 	"version": "1.0.0",
+	"description": "A comprehensive test suite designed for FreeCodeCamp's backend certification, validating mastery in backend development concepts, APIs, databases, and server-side scripting languages.",
 	"dependencies": {
 		"express": "^4.14.0"
 	},
