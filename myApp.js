@@ -1,11 +1,13 @@
 const express = require("express");
 const app = express();
 const path = require("path");
+const bodyParser = require("body-parser");
 require('dotenv').config()
 function logger(req, res, next){
     console.log(`${req.method}${" "}${req.path}${" - "}${req.ip}`);
     next();
 }
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(logger);
 const publicDirectory = path.join(__dirname, "public");
 const publicPath = "/public";
