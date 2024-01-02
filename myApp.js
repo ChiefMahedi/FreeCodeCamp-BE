@@ -2,10 +2,11 @@ const express = require("express");
 const app = express();
 const path = require("path");
 require('dotenv').config()
-app.use('/',(req, res, next)=>{
+function logger(req, res, next){
     console.log(`${req.method} ${req.path} ${req.ip}`);
     next();
-})
+}
+app.use(logger);
 const publicDirectory = path.join(__dirname, "public");
 const publicPath = "/public";
 app.use(publicPath, express.static(publicDirectory));
