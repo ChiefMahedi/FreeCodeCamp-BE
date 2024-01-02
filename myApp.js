@@ -3,7 +3,8 @@ let app = express();
 
 console.log('Hello World');
 app.get('/',(req, res)=>{
-    res.send('Hello Express');
+    const file = __dirname + '/views/index.html'
+    res.sendFile(file);
 })
 
 
