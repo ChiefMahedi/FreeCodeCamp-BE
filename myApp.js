@@ -12,5 +12,8 @@ app.get('/', (req, res) => {
     const file = path.join(__dirname, 'views', 'index.html');
     res.sendFile(file);
 });
+app.get('/json',(req, res)=>{
+    res.json({"message": "Hello json"});
+})
 
 module.exports = app;
