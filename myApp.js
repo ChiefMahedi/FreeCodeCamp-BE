@@ -3,7 +3,7 @@ const app = express();
 const path = require("path");
 require('dotenv').config()
 function logger(req, res, next){
-    console.log(`${req.method}${" "}${req.path}${" "}${req.ip}`);
+    console.log(`${req.method}${" "}${req.path}${" - "}${req.ip}`);
     next();
 }
 app.use(logger);
