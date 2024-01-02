@@ -48,6 +48,7 @@ app
     res.json({ name: `${firstName}${' '}${lastName}`});
 })
 .post((req, res)=>{
-
+    const {first, last} = req.body;
+    res.json({ name: `${first}${' '}${last}`});
 })
 module.exports = app;
