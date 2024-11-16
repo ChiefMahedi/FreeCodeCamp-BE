@@ -1,71 +1,109 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const dns = require('dns');
 const bodyParser = require('body-parser');
 const app = express();
-
-// Basic Configuration
-const port = process.env.PORT || 3000;
-
-// In-memory database for storing URLs
-let urlDatabase = [];
-let urlCounter = 1;
+require('dotenv').config();
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use('/public', express.static(`${process.cwd()}/public`));
+app.use(express.static('public'));
 
-// Serve the main HTML page
-app.get('/', function(req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/views/index.html');
 });
 
-// Your first API endpoint
-app.get('/api/hello', function(req, res) {
-  res.json({ greeting: 'hello API' });
+
+let users = [];
+let exercises = [];
+
+
+const findUserById = (id) => users.find((user) => user._id === id);
+const generateId = () => Math.random().toString(36).substring(2, 9);
+
+
+app.post('/api/users', (req, res) => {
+  const { username } = req.body;
+  const userId = generateId();
+  const newUser = { username, _id: userId };
+  users.push(newUser);
+  res.json(newUser);
 });
 
-// Helper function to validate URL
-const isValidUrl = (url) => {
-  const urlPattern = /^(http|https):\/\/(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}.*$/;
-  return urlPattern.test(url);
-};
+app.get('/api/users', (req, res) => {
+  res.json(users);
+});
 
-app.post('/api/shorturl', (req, res) => {
-  const originalUrl = req.body.url;
+app.post('/api/users/:_id/exercises', (req, res) => {
+  const { _id } = req.params;
+  const { description, duration, date } = req.body;
   
-  if (!isValidUrl(originalUrl)) {
-    return res.json({ error: 'invalid url' });
+  const user = findUserById(_id);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
   }
-  
-  const hostname = new URL(originalUrl).hostname;
 
-  dns.lookup(hostname, (err) => {
-    if (err) {
-      return res.json({ error: 'invalid url' });
+  const exerciseDate = date ? new Date(date) : new Date();
+  if (exerciseDate.toString() === 'Invalid Date') {
+    return res.json({ error: 'Invalid date' });
+  }
+
+  const newExercise = {
+    username: user.username,
+    description,
+    duration: parseInt(duration),
+    date: exerciseDate.toDateString(),
+    _id: user._id,
+  };
+
+  exercises.push({ ...newExercise, userId: user._id });
+
+  res.json(newExercise);
+});
+
+app.get('/api/users/:_id/logs', (req, res) => {
+  const { _id } = req.params;
+  const { from, to, limit } = req.query;
+  
+  const user = findUserById(_id);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  let userExercises = exercises.filter((ex) => ex.userId === user._id);
+
+  if (from) {
+    const fromDate = new Date(from);
+    if (fromDate.toString() !== 'Invalid Date') {
+      userExercises = userExercises.filter((ex) => new Date(ex.date) >= fromDate);
     }
-
-    const shortUrl = urlCounter++;
-    urlDatabase.push({ original_url: originalUrl, short_url: shortUrl });
-    res.json({ original_url: originalUrl, short_url: shortUrl });
-  });
-});
-
-app.get('/api/shorturl/:short_url', (req, res) => {
-  const shortUrl = parseInt(req.params.short_url);
-
-  const urlEntry = urlDatabase.find((entry) => entry.short_url === shortUrl);
-
-  if (urlEntry) {
-    res.redirect(urlEntry.original_url);
-  } else {
-    res.json({ error: 'No short URL found for the given input' });
   }
+  
+  if (to) {
+    const toDate = new Date(to);
+    if (toDate.toString() !== 'Invalid Date') {
+      userExercises = userExercises.filter((ex) => new Date(ex.date) <= toDate);
+    }
+  }
+
+  if (limit) {
+    userExercises = userExercises.slice(0, parseInt(limit));
+  }
+
+  const response = {
+    username: user.username,
+    count: userExercises.length,
+    _id: user._id,
+    log: userExercises.map((ex) => ({
+      description: ex.description,
+      duration: ex.duration,
+      date: ex.date,
+    })),
+  };
+
+  res.json(response);
 });
 
-// Listen on the specified port
-app.listen(port, function() {
-  console.log(`Listening on port ${port}`);
+const listener = app.listen(process.env.PORT || 3000, () => {
+  console.log('Your app is listening on port ' + listener.address().port);
 });
